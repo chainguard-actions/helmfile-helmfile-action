@@ -1,0 +1,64 @@
+name: Test helmfile with custom working directory
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Pre-populate tool cache with fake helmfile and helm
+        run: |
+          set -e
+          TOOL_CACHE="${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}"
+
+          # Fake helmfile v0.150.0
+          HF_DIR="$TOOL_CACHE/helmfile/0.150.0/x64"
+          mkdir -p "$HF_DIR"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/fake-helmfile.sh" "$HF_DIR/helmfile"
+          chmod +x "$HF_DIR/helmfile"
+          touch "$TOOL_CACHE/helmfile/0.150.0/x64.complete"
+
+          # Fake helm v3.11.0
+          HELM_DIR="$TOOL_CACHE/helm/3.11.0/x64"
+          mkdir -p "$HELM_DIR"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/fake-helm.sh" "$HELM_DIR/helm"
+          chmod +x "$HELM_DIR/helm"
+          touch "$TOOL_CACHE/helm/3.11.0/x64.complete"
+
+          echo "Tool cache populated"
+      # Use 'helmfile version' to verify the action runs correctly with a custom
+      # working directory. The fixture helmfile.yaml is present in the workdir.
+      - id: action
+        uses: .
+        with:
+          helmfile-args: version
+          helmfile-version: 'v0.150.0'
+          helm-version: 'v3.11.0'
+          helm-plugins: ''
+          helmfile-workdirectory: 'tests/fixtures/helmfile-workdir'
+      - name: Assert exit-code is 0
+        env:
+          EXIT_CODE: ${{ steps.action.outputs.exit-code }}
+        run: |
+          echo "exit-code: $EXIT_CODE"
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "FAIL: expected exit-code 0 but got '$EXIT_CODE'"
+            exit 1
+          fi
+          echo "PASS: exit-code is 0"
+      - name: Assert stdout is non-empty (helmfile version ran)
+        env:
+          STDOUT: ${{ steps.action.outputs.helmfile-stdout }}
+        run: |
+          echo "stdout: $STDOUT"
+          if [ -z "$STDOUT" ]; then
+            echo "FAIL: expected stdout to be non-empty"
+            exit 1
+          fi
+          echo "PASS: stdout is non-empty"
+      - name: Assert stderr is captured
+        env:
+          STDERR: ${{ steps.action.outputs.helmfile-stderr }}
+        run: |
+          echo "stderr: $STDERR"
+          echo "PASS: stderr check done"

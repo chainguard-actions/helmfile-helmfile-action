@@ -1,0 +1,64 @@
+name: Test helmfile stderr output capture
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Pre-populate tool cache with fake helmfile and helm
+        run: |
+          set -e
+          TOOL_CACHE="${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}"
+
+          # Fake helmfile v0.150.0
+          HF_DIR="$TOOL_CACHE/helmfile/0.150.0/x64"
+          mkdir -p "$HF_DIR"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/fake-helmfile.sh" "$HF_DIR/helmfile"
+          chmod +x "$HF_DIR/helmfile"
+          touch "$TOOL_CACHE/helmfile/0.150.0/x64.complete"
+
+          # Fake helm v3.11.0
+          HELM_DIR="$TOOL_CACHE/helm/3.11.0/x64"
+          mkdir -p "$HELM_DIR"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/fake-helm.sh" "$HELM_DIR/helm"
+          chmod +x "$HELM_DIR/helm"
+          touch "$TOOL_CACHE/helm/3.11.0/x64.complete"
+
+          echo "Tool cache populated"
+      # Run helmfile with a non-existent file path to trigger a failure with stderr output
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          helmfile-args: '--file /nonexistent/path/helmfile.yaml list'
+          helmfile-version: 'v0.150.0'
+          helm-version: 'v3.11.0'
+          helm-plugins: ''
+      - name: Assert action failed and outputs are captured
+        env:
+          EXIT_CODE: ${{ steps.action.outputs.exit-code }}
+          OUTCOME: ${{ steps.action.outcome }}
+          STDERR: ${{ steps.action.outputs.helmfile-stderr }}
+          STDOUT: ${{ steps.action.outputs.helmfile-stdout }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "exit-code: $EXIT_CODE"
+          echo "stderr: $STDERR"
+          echo "stdout: $STDOUT"
+          # The action should fail because the helmfile path does not exist
+          # exit code != 0 and != 2 causes setFailed, so outcome should be failure
+          if [ "$OUTCOME" = "success" ]; then
+            echo "FAIL: expected action to fail with non-existent helmfile path"
+            exit 1
+          fi
+          # exit-code should be set (in finally block, always runs)
+          if [ -z "$EXIT_CODE" ]; then
+            echo "FAIL: exit-code output should be set even on failure"
+            exit 1
+          fi
+          if [ "$EXIT_CODE" = "0" ]; then
+            echo "FAIL: expected non-zero exit-code"
+            exit 1
+          fi
+          echo "PASS: action failed gracefully with exit-code '$EXIT_CODE' and outputs captured"

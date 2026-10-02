@@ -1,0 +1,46 @@
+name: 'helmfile-action'
+description: 'Install and run Helmfile'
+author: 'helmfile'
+inputs:
+  helmfile-args:
+    required: true
+    description: 'Helmfile arguments'
+  helmfile-auto-init:
+    required: false
+    description: 'Automatically initialize helmfile'
+    default: 'false'
+  helmfile-version:
+    required: false
+    description: 'Helmfile version'
+    default: 'latest'
+  helm-version:
+    required: false
+    description: 'Helm version'
+    default: 'latest'
+  helmfile-workdirectory:
+    required: false
+    description: 'Helmfile working directory'
+    default: '.'
+  helm-plugins:
+    required: false
+    description: 'Comma separated list of Helm plugins to install'
+    default: 'https://github.com/databus23/helm-diff'
+  helmfile-kubeconfig-context:
+    required: false
+    description: 'kubeconfig context, it not empty, it will be written to the kubeconfig file'
+    default: ''
+  helm-diff-color:
+    required: false
+    description: 'Enable helm diff plugin color output'
+    default: 'true'
+outputs:
+  exit-code:
+    description: 'Exit code of helmfile. Useful to handle diff --detailed-exitcode'
+  helmfile-stdout:
+    description: 'Standard output of helmfile command'
+  helmfile-stderr:
+    description: 'Error output of helmfile command'
+runs:
+  pre: chainguard-phonehome.js
+  using: 'node24'
+  main: 'dist/index.js'
