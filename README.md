@@ -6,9 +6,9 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v2.4.8 | [`v2.4.8`](https://github.com/chainguard-actions/helmfile-helmfile-action/tree/v2.4.8) | [`614b4cd`](https://github.com/helmfile/helmfile-action/commit/614b4cd063ada10b87f668f6ffd35485bce0cac5) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v2.4.8 | [`v2.4.8`](https://github.com/chainguard-actions/helmfile-helmfile-action/tree/v2.4.8) | [`614b4cd`](https://github.com/helmfile/helmfile-action/commit/614b4cd063ada10b87f668f6ffd35485bce0cac5) | [`HARDENING.md`](https://github.com/chainguard-actions/helmfile-helmfile-action/blob/v2.4.8/HARDENING.md) |
 
 ## Privacy
 
