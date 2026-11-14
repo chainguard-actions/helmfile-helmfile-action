@@ -1,0 +1,36 @@
+name: Test helmfile template in workdirectory
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          helmfile-args: template
+          helmfile-version: v0.169.1
+          helm-version: v3.16.2
+          helm-plugins: ''
+          helmfile-workdirectory: tests/fixtures/helmfile-basic
+      - name: Assert rendered template
+        env:
+          EXIT_CODE: ${{ steps.action.outputs.exit-code }}
+          STDOUT: ${{ steps.action.outputs.helmfile-stdout }}
+        run: |
+          echo "exit-code: $EXIT_CODE"
+          echo "stdout: $STDOUT"
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "FAIL: expected exit-code 0"
+            exit 1
+          fi
+          if ! echo "$STDOUT" | grep -q "myrelease-config"; then
+            echo "FAIL: expected ConfigMap myrelease-config"
+            exit 1
+          fi
+          if ! echo "$STDOUT" | grep -q "hello-from-helmfile-test"; then
+            echo "FAIL: expected helmfile value override"
+            exit 1
+          fi
+          echo "PASS"

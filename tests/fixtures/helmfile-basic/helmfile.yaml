@@ -1,0 +1,6 @@
+releases:
+  - name: myrelease
+    namespace: default
+    chart: ./chart
+    values:
+      - greeting: hello-from-helmfile-test

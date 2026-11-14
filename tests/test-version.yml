@@ -1,0 +1,37 @@
+name: Test helmfile version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          helmfile-args: version
+          helmfile-version: v0.169.1
+          helm-version: v3.16.2
+          helm-plugins: ''
+      - name: Assert outputs
+        env:
+          EXIT_CODE: ${{ steps.action.outputs.exit-code }}
+          STDOUT: ${{ steps.action.outputs.helmfile-stdout }}
+        run: |
+          echo "exit-code: $EXIT_CODE"
+          echo "stdout: $STDOUT"
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "FAIL: expected exit-code 0"
+            exit 1
+          fi
+          if ! echo "$STDOUT" | grep -q "0.169.1"; then
+            echo "FAIL: expected version 0.169.1 in stdout"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert binaries on PATH
+        run: |
+          helmfile --version
+          helm version --short | tee /tmp/helmver
+          grep -q "v3.16.2" /tmp/helmver || { echo "FAIL: wrong helm version"; exit 1; }
+          echo "PASS"
