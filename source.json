@@ -4,8 +4,13 @@
   "version": "v2.4.9",
   "commit_sha": "62818df621e4726e3da06c567b40c55138e93281",
   "url": "https://github.com/helmfile/helmfile-action",
-  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "policy_sha": "374911c4be584df24e6da57af2d990570ef0f859",
   "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
   "test_agent_version": "2",
-  "harden_agent_version": "2"
+  "harden_agent_version": "2",
+  "dist_artifact": {
+    "gcs_uri": "gs://patch-actions-node-artifacts/dist-artifacts/helmfile/helmfile-action/v2.4.9/sha256-38b8a71659e8db943686da88d67905a561fcaf78fef96803a280a99318ae8a82.tar.gz",
+    "sha256": "38b8a71659e8db943686da88d67905a561fcaf78fef96803a280a99318ae8a82",
+    "size_bytes": 617168
+  }
 }
